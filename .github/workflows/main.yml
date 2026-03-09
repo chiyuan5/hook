@@ -1,0 +1,38 @@
+name: Build AAR
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant gradlew permission
+        run: chmod +x ./gradlew
+
+      - name: Build AAR
+        run: ./gradlew :core:bundleReleaseAar
+
+      - name: Upload AAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-release-aar
+          path: core/build/outputs/aar/*.aar
