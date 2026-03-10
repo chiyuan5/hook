@@ -20,8 +20,9 @@ add_library(aliuhook SHARED
         xz/linux/lib/xz/xz_dec_lzma2.c
         xz/linux/lib/xz/xz_dec_stream.c
 )
-
-find_package(lsplant REQUIRED CONFIG)
 find_package(dobby REQUIRED CONFIG)
-
-target_link_libraries(aliuhook log lsplant::lsplant dobby::dobby)
+target_link_libraries(aliuhook
+        log
+        dl
+        dobby::dobby
+)
