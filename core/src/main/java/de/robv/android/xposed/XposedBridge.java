@@ -25,8 +25,6 @@ public class XposedBridge {
         } catch (Throwable t) {
             throw new RuntimeException("Failed to initialize", t);
         }
-
-        System.loadLibrary("aliuhook");
     }
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -71,7 +69,47 @@ public class XposedBridge {
      * @see <a href="https://developer.android.com/guide/app-compatibility/restrictions-non-sdk-interfaces">https://developer.android.com/guide/app-compatibility/restrictions-non-sdk-interfaces</a>
      */
     public static native boolean disableHiddenApiRestrictions();
+    private static volatile boolean sHookLoaded = false;
+private static volatile boolean sLsplantInited = false;
 
+private static native boolean nativeInitLsplant(String lsplantAbsolutePath);
+
+public static synchronized void loadHookLibrary(String hookAbsolutePath) {
+    if (sHookLoaded) return;
+    if (hookAbsolutePath == null || hookAbsolutePath.isEmpty()) {
+        throw new IllegalArgumentException("hookAbsolutePath is empty");
+    }
+    System.load(hookAbsolutePath);
+    sHookLoaded = true;
+}
+
+public static synchronized void initLsplant(String lsplantAbsolutePath) {
+    if (sLsplantInited) return;
+    if (!sHookLoaded) {
+        throw new IllegalStateException("hook library not loaded, call loadHookLibrary() first");
+    }
+    if (lsplantAbsolutePath == null || lsplantAbsolutePath.isEmpty()) {
+        throw new IllegalArgumentException("lsplantAbsolutePath is empty");
+    }
+    if (!nativeInitLsplant(lsplantAbsolutePath)) {
+        throw new IllegalStateException("nativeInitLsplant failed");
+    }
+    sLsplantInited = true;
+}
+
+public static synchronized void loadAll(String hookAbsolutePath, String lsplantAbsolutePath) {
+    loadHookLibrary(hookAbsolutePath);
+    initLsplant(lsplantAbsolutePath);
+}
+
+private static void ensureNativeReady() {
+    if (!sHookLoaded) {
+        throw new IllegalStateException("hook library not loaded");
+    }
+    if (!sLsplantInited) {
+        throw new IllegalStateException("lsplant not initialized");
+    }
+}
     private static void checkMethod(Member method) {
         if (method == null)
             throw new NullPointerException("method must not be null");
