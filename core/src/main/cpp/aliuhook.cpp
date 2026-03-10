@@ -52,7 +52,7 @@ static bool Unprotect(void *addr) {
     return true;
 }
 
-static void *InlineHooker(void *address, void *replacement) {
+void *InlineHooker(void *address, void *replacement) {
     if (!Unprotect(address)) {
         return nullptr;
     }
@@ -64,7 +64,7 @@ static void *InlineHooker(void *address, void *replacement) {
     return nullptr;
 }
 
-static bool InlineUnhooker(void *func) {
+bool InlineUnhooker(void *func) {
     return DobbyDestroy(func) == RT_SUCCESS;
 }
 
