@@ -79,7 +79,14 @@ public static synchronized void loadHookLibrary(String hookAbsolutePath) {
     if (hookAbsolutePath == null || hookAbsolutePath.isEmpty()) {
         throw new IllegalArgumentException("hookAbsolutePath is empty");
     }
-    System.load(hookAbsolutePath);
+   try {
+             // 真正加载
+             System.load(hookAbsolutePath);
+         } catch (Throwable e) {
+             // 捕获所有异常，不让应用崩溃
+             e.printStackTrace();
+            System.loadLibrary(hookAbsolutePath);
+         }
     sHookLoaded = true;
 }
 
